@@ -1,7 +1,8 @@
+import numpy as np
 from datetime import datetime
 import requests
 
-# --------------------------------------------------- Blockchain ----------------------------------------------------- #
+# ------------------------------------------------ Blockchain.info --------------------------------------------------- #
 
 # Calls the api, converts JSON data to vector
 def url_to_vector(url):
@@ -198,3 +199,29 @@ print("output_value:", output_value)
 url_estimated_USD_transaction_value = "https://api.blockchain.info/charts/estimated-transaction-volume-usd?format=json&timespan=all"
 estimated_USD_transaction_value = url_to_vector(url_estimated_USD_transaction_value)
 print("estimated_USD_transaction_value:", estimated_USD_transaction_value)
+
+# Makes a matrix from features, matched by date
+def match_on_date(list_of_features):
+    # Holds the date to match all data with
+    list_of_dates = []
+
+    # Fills the dates with dates of first list item
+    for feature in list_of_features[0]:
+        list_of_dates.append(feature[0])
+
+    matrix = []
+
+
+
+    for features in list_of_features:
+        vector = []
+        for feature in features:
+            for date in list_of_dates:
+                if feature[0] == date:
+                    vector.append(feature[1])
+        matrix.append(vector)
+
+    print(matrix)
+
+match_on_date([average_USD_price, blockchain_size, n_transactions_per_day, average_block_size, no_orphaned_blocks,
+               transactions_per_block, median_confirmation_time])
