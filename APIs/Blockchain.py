@@ -209,14 +209,21 @@ def match_on_date(list_of_features):
     for feature in list_of_features[0]:
         list_of_dates.append(feature[0])
 
+    print(list_of_dates)
+
     matrix = []
 
     for features in list_of_features:
         vector = []
         for feature in features:
             for date in list_of_dates:
+                match_found = False
                 if feature[0] == date:
+                    match_found = True
                     vector.append(feature[1])
+                    break
+            if not match_found:
+                vector.append("NaN")
         matrix.append(vector)
 
     return matrix
