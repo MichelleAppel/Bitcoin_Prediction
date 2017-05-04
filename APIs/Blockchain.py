@@ -211,8 +211,6 @@ def match_on_date(list_of_features):
 
     matrix = []
 
-
-
     for features in list_of_features:
         vector = []
         for feature in features:
@@ -221,7 +219,7 @@ def match_on_date(list_of_features):
                     vector.append(feature[1])
         matrix.append(vector)
 
-    print(matrix)
+    return matrix
 
-match_on_date([average_USD_price, blockchain_size, n_transactions_per_day, average_block_size, no_orphaned_blocks,
-               transactions_per_block, median_confirmation_time])
+print(match_on_date([average_USD_price, blockchain_size, n_transactions_per_day, average_block_size, no_orphaned_blocks,
+               transactions_per_block, median_confirmation_time]))
