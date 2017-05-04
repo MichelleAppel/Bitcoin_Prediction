@@ -201,7 +201,7 @@ estimated_USD_transaction_value = url_to_vector(url_estimated_USD_transaction_va
 print("estimated_USD_transaction_value:", estimated_USD_transaction_value)
 
 # Makes a matrix from features, matched by date
-def match_on_date(list_of_features):
+def match_by_date(list_of_features):
     # Holds the date to match all data with
     list_of_dates = []
 
@@ -228,5 +228,8 @@ def match_on_date(list_of_features):
 
     return matrix
 
-print(match_on_date([average_USD_price, blockchain_size, n_transactions_per_day, average_block_size, no_orphaned_blocks,
+print(match_by_date([average_USD_price, blockchain_size, n_transactions_per_day, average_block_size, no_orphaned_blocks,
                transactions_per_block, median_confirmation_time]))
+
+y = match_by_date([average_USD_price, blockchain_size, n_transactions_per_day, average_block_size, no_orphaned_blocks,
+               transactions_per_block, median_confirmation_time])
