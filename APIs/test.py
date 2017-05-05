@@ -22,11 +22,11 @@ def url_to_vector(url):
         total_number_of_transactions_list.append([datetime.fromtimestamp(int(item['x'])).strftime('%Y-%m-%d %H:%M:%S'), item['y']])
 
     # Print
-    print("")
-    print(data['name'])
-    print("Per", data['period'])
-    print("Unit:", data['unit'])
-    print("Length:", len(total_number_of_transactions_list))
+    # print("")
+    # print(data['name'])
+    # print("Per", data['period'])
+    # print("Unit:", data['unit'])
+    # print("Length:", len(total_number_of_transactions_list))
 
     # Return result
     return total_number_of_transactions_list
@@ -37,20 +37,20 @@ def url_to_vector(url):
 # Average USD market price across major bitcoin exchanges.
 url_average_USD_price = "https://api.blockchain.info/charts/market-price?format=json&timespan=all"
 average_USD_price = url_to_vector(url_average_USD_price)
-print("average_USD_price:", average_USD_price)
 
 # ------------------------------------------------- Block Details ---------------------------------------------------- #
 
 # The total size of all block headers and transactions in MB. Not including database indexes.
 url_blockchain_size = "https://api.blockchain.info/charts/blocks-size?format=json&timespan=all"
 blockchain_size = url_to_vector(url_blockchain_size)
-print("blockchain_size:", blockchain_size)
 
 # The average block size in MB.
 url_average_block_size = "https://api.blockchain.info/charts/avg-block-size?format=json&timespan=all"
 average_block_size = url_to_vector(url_average_block_size)
-print("average_block_size:", average_block_size)
 
+# print("average_USD_price:", average_USD_price)
+# print("blockchain_size:", blockchain_size)
+# print("average_block_size:", average_block_size)
 
 def match_on_date(list_of_features):
     # Holds the date to match all data with
@@ -59,8 +59,6 @@ def match_on_date(list_of_features):
     # Fills the dates with dates of first list item
     for feature in list_of_features[0]:
         list_of_dates.append(feature[0])
-
-    print(list_of_dates)
 
     matrix = []
 
@@ -76,7 +74,13 @@ def match_on_date(list_of_features):
             if not match_found:
                 vector.append("NaN")
         matrix.append(vector)
-
     return matrix
 
-print(match_on_date([average_USD_price, blockchain_size, average_block_size]))
+matrix = match_on_date([average_USD_price, blockchain_size, average_block_size])
+
+y = matrix[0]
+X = matrix[1:]
+
+print("y", y)
+print("X", X)
+

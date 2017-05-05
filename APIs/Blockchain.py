@@ -131,11 +131,6 @@ url_cost_per_transaction = "https://api.blockchain.info/charts/cost-per-transact
 cost_per_transaction = url_to_vector(url_cost_per_transaction)
 print("cost_per_transaction:", cost_per_transaction)
 
-# A chart showing miners revenue divided by the number of transactions.
-url_cost_per_transaction = "https://api.blockchain.info/charts/cost-per-transaction?format=json&timespan=all"
-cost_per_transaction = url_to_vector(url_cost_per_transaction)
-print("cost_per_transaction:", cost_per_transaction)
-
 # ----------------------------------------------- Network Activity --------------------------------------------------- #
 
 # The total number of unique addresses used on the Bitcoin blockchain.
@@ -228,8 +223,13 @@ def match_by_date(list_of_features):
 
     return matrix
 
-print(match_by_date([average_USD_price, blockchain_size, n_transactions_per_day, average_block_size, no_orphaned_blocks,
-               transactions_per_block, median_confirmation_time]))
+matrix = match_by_date([average_USD_price, blockchain_size, n_transactions_per_day, average_block_size, no_orphaned_blocks,
+                        transactions_per_block, median_confirmation_time, BTC_unlimited_support, hash_rate, difficulty,
+                        miners_revenue, total_transaction_fees, total_transaction_fees_USD, cost_per_transaction,
+                        cost_per_transaction_percent])
 
-y = match_by_date([average_USD_price, blockchain_size, n_transactions_per_day, average_block_size, no_orphaned_blocks,
-               transactions_per_block, median_confirmation_time])
+y = matrix[0]
+X = matrix[1:]
+
+print("y", y)
+print("X", X)
