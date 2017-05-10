@@ -13,20 +13,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 from test import return_data
 
-BATCH_START = 1000
-TIME_STEPS = 5
-BATCH_SIZE = 100
+BATCH_START = 0
+TIME_STEPS = 20
+BATCH_SIZE = 50
 INPUT_SIZE = 1
 OUTPUT_SIZE = 1
 CELL_SIZE = 10
-LR = 0.05
+LR = 50
 
 y, X = return_data()
 
 def get_batch():
     global BATCH_START, TIME_STEPS
     # xs shape (50batch, 20steps)
-    xs = np.arange(BATCH_START, BATCH_START+TIME_STEPS*BATCH_SIZE).reshape((BATCH_SIZE, TIME_STEPS)) #/(10*np.pi)
+    # TODO: adjust to Bitcoin data
+    xs = np.arange(BATCH_START, BATCH_START+TIME_STEPS*BATCH_SIZE).reshape((BATCH_SIZE, TIME_STEPS)) / (10*np.pi)
     seq = xs*np.array([y[BATCH_START:BATCH_START+TIME_STEPS]])
     res = xs*np.array([y[BATCH_START:BATCH_START+TIME_STEPS]])
     BATCH_START += TIME_STEPS
@@ -133,31 +134,32 @@ if __name__ == '__main__':
     plt.ion()
     plt.show()
     for i in range(200):
-        seq, res, xs = get_batch()
-        if i == 0:
-            feed_dict = {
+        if len(y[BATCH_START:]) >= BATCH_SIZE : # End of data
+            seq, res, xs = get_batch()
+            if i == 0:
+                feed_dict = {
+                        model.xs: seq,
+                        model.ys: res,
+                        # create initial state
+                }
+            else:
+                feed_dict = {
                     model.xs: seq,
                     model.ys: res,
-                    # create initial state
-            }
-        else:
-            feed_dict = {
-                model.xs: seq,
-                model.ys: res,
-                model.cell_init_state: state    # use last state as the initial state for this run
-            }
+                    model.cell_init_state: state    # use last state as the initial state for this run
+                }
 
-        _, cost, state, pred = sess.run(
-            [model.train_op, model.cost, model.cell_final_state, model.pred],
-            feed_dict=feed_dict)
+            _, cost, state, pred = sess.run(
+                [model.train_op, model.cost, model.cell_final_state, model.pred],
+                feed_dict=feed_dict)
 
-        # plotting
-        plt.plot(xs[0, :], res[0].flatten(), 'r', xs[0, :], pred.flatten()[:TIME_STEPS], 'b--')
-        plt.ylim((-1, np.max(res)+10))
-        plt.draw()
-        plt.pause(0.1)
+            # plotting
+            plt.plot(xs[0, :], res[0].flatten(), 'r', xs[0, :], pred.flatten()[:TIME_STEPS], 'b--')
+            plt.ylim((np.min(y)-10, np.max(y)+10))
+            plt.draw()
+            plt.pause(0.1)
 
-        if i % 20 == 0:
-            print('cost: ', round(cost, 4))
-            result = sess.run(merged, feed_dict)
-            writer.add_summary(result, i)
+            if i % 20 == 0:
+                print('cost: ', round(cost, 4))
+                result = sess.run(merged, feed_dict)
+                writer.add_summary(result, i)
