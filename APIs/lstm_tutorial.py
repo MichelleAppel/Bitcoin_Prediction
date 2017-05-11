@@ -11,18 +11,20 @@ Run this script on tensorflow r0.10. Errors appear when using lower versions.
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
-from test import return_data
+from Blockchain import return_data
+
+# Get data from test.py
+y, X = return_data()
 
 BATCH_START = 0
-TIME_STEPS = 10
-BATCH_SIZE = 20
-INPUT_SIZE = 2
+TIME_STEPS = 5
+BATCH_SIZE = 15
+INPUT_SIZE = len(X)
 OUTPUT_SIZE = 1
 CELL_SIZE = 10
 LR = 10
 
-# Get data from test.py
-y, X = return_data()
+
 
 
 def get_batch():
