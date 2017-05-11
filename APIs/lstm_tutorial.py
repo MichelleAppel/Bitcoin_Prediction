@@ -14,29 +14,42 @@ import matplotlib.pyplot as plt
 from test import return_data
 
 BATCH_START = 0
-TIME_STEPS = 20
-BATCH_SIZE = 50
+TIME_STEPS = 10
+BATCH_SIZE = 15
 INPUT_SIZE = 1
 OUTPUT_SIZE = 1
 CELL_SIZE = 10
-LR = 50
+LR = 10
 
+# Get data from test.py
 y, X = return_data()
 
 def get_batch():
     global BATCH_START, TIME_STEPS
     # xs shape (50batch, 20steps)
-    # TODO: adjust to Bitcoin data
-    xs = np.arange(BATCH_START, BATCH_START+TIME_STEPS*BATCH_SIZE).reshape((BATCH_SIZE, TIME_STEPS)) / (10*np.pi)
-    seq = xs*np.array([y[BATCH_START:BATCH_START+TIME_STEPS]])
-    res = xs*np.array([y[BATCH_START:BATCH_START+TIME_STEPS]])
+    xs = np.arange(BATCH_START, BATCH_START+TIME_STEPS*BATCH_SIZE).reshape((BATCH_SIZE, TIME_STEPS))
+
+    seq = []
+    for batch in xs:
+        sub = []
+        for item in batch:
+            sub.append(y[item])
+        seq.append(sub)
+    seq = np.array(seq)
+
+    res = []
+    for batch in xs:
+        sub = []
+        for item in batch:
+            sub.append(y[item])
+        res.append(sub)
+    res = np.array(res)
+
     BATCH_START += TIME_STEPS
     # plt.plot(xs[0, :], res[0, :], 'r', xs[0, :], seq[0, :], 'b--')
     # plt.show()
     # returned seq, res and xs: shape (batch, step, input)
-    result = [seq[:, :, np.newaxis], res[:, :, np.newaxis], xs]
-    # print(result)
-    return result
+    return [seq[:, :, np.newaxis], res[:, :, np.newaxis], xs]
 
 
 class LSTMRNN(object):
@@ -155,9 +168,9 @@ if __name__ == '__main__':
 
             # plotting
             plt.plot(xs[0, :], res[0].flatten(), 'r', xs[0, :], pred.flatten()[:TIME_STEPS], 'b--')
-            plt.ylim((np.min(y)-10, np.max(y)+10))
+            plt.ylim((-1, np.max(res)+10))
             plt.draw()
-            plt.pause(0.1)
+            plt.pause(0.02)
 
             if i % 20 == 0:
                 print('cost: ', round(cost, 4))
