@@ -13,18 +13,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 from Blockchain import return_data
 
-# Get data from test.py
+# Get data from Blockchain.py
 y, X = return_data()
 
 BATCH_START = 0
 TIME_STEPS = 5
-BATCH_SIZE = 15
-INPUT_SIZE = len(X)
+BATCH_SIZE = 20
+INPUT_SIZE = len(X) # Amount of features
 OUTPUT_SIZE = 1
 CELL_SIZE = 10
 LR = 10
-
-
 
 
 def get_batch():
@@ -34,7 +32,7 @@ def get_batch():
     xs = np.arange(BATCH_START, BATCH_START+TIME_STEPS*BATCH_SIZE).reshape((BATCH_SIZE, TIME_STEPS))
 
     # Features
-    seq=[]
+    seq = []
     for feat in X:
         features = []
         for batch in xs:
@@ -44,10 +42,8 @@ def get_batch():
             features.append(sub)
         seq.append(features)
 
+    # Reshape
     seq = np.reshape(np.array(seq), (BATCH_SIZE, TIME_STEPS, INPUT_SIZE))
-
-    print(seq.shape)
-    print(seq)
 
     # Result: Bitcoin price
     res = []

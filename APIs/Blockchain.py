@@ -231,7 +231,7 @@ def return_data():
     #                         cost_per_transaction_percent])
 
     matrix = match_by_date([average_USD_price, blockchain_size, n_transactions_per_day, average_block_size, no_orphaned_blocks,
-                            transactions_per_block, median_confirmation_time])
+                            transactions_per_block, median_confirmation_time, hash_rate, difficulty, miners_revenue, total_transaction_fees, cost_per_transaction])
 
     y = matrix[0]
     X = matrix[1:]
