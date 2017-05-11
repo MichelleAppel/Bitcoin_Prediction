@@ -15,8 +15,8 @@ from test import return_data
 
 BATCH_START = 0
 TIME_STEPS = 10
-BATCH_SIZE = 15
-INPUT_SIZE = 1
+BATCH_SIZE = 20
+INPUT_SIZE = 2
 OUTPUT_SIZE = 1
 CELL_SIZE = 10
 LR = 10
@@ -24,19 +24,30 @@ LR = 10
 # Get data from test.py
 y, X = return_data()
 
+
 def get_batch():
     global BATCH_START, TIME_STEPS
-    # xs shape (50batch, 20steps)
+
+    # xs shape
     xs = np.arange(BATCH_START, BATCH_START+TIME_STEPS*BATCH_SIZE).reshape((BATCH_SIZE, TIME_STEPS))
 
-    seq = []
-    for batch in xs:
-        sub = []
-        for item in batch:
-            sub.append(y[item])
-        seq.append(sub)
-    seq = np.array(seq)
+    # Features
+    seq=[]
+    for feat in X:
+        features = []
+        for batch in xs:
+            sub = []
+            for item in batch:
+                sub.append(feat[item])
+            features.append(sub)
+        seq.append(features)
 
+    seq = np.reshape(np.array(seq), (BATCH_SIZE, TIME_STEPS, INPUT_SIZE))
+
+    print(seq.shape)
+    print(seq)
+
+    # Result: Bitcoin price
     res = []
     for batch in xs:
         sub = []
@@ -49,7 +60,7 @@ def get_batch():
     # plt.plot(xs[0, :], res[0, :], 'r', xs[0, :], seq[0, :], 'b--')
     # plt.show()
     # returned seq, res and xs: shape (batch, step, input)
-    return [seq[:, :, np.newaxis], res[:, :, np.newaxis], xs]
+    return [seq[:, :], res[:, :, np.newaxis], xs]
 
 
 class LSTMRNN(object):
@@ -146,8 +157,8 @@ if __name__ == '__main__':
 
     plt.ion()
     plt.show()
-    for i in range(200):
-        if len(y[BATCH_START:]) >= BATCH_SIZE : # End of data
+    for i in range(len(y)):
+        if len(y[BATCH_START:]) >= BATCH_SIZE*TIME_STEPS : # End of data
             seq, res, xs = get_batch()
             if i == 0:
                 feed_dict = {
@@ -162,9 +173,8 @@ if __name__ == '__main__':
                     model.cell_init_state: state    # use last state as the initial state for this run
                 }
 
-            _, cost, state, pred = sess.run(
-                [model.train_op, model.cost, model.cell_final_state, model.pred],
-                feed_dict=feed_dict)
+            _, cost, state, pred = sess.run([model.train_op, model.cost, model.cell_final_state, model.pred],
+                                            feed_dict=feed_dict)
 
             # plotting
             plt.plot(xs[0, :], res[0].flatten(), 'r', xs[0, :], pred.flatten()[:TIME_STEPS], 'b--')
@@ -176,3 +186,5 @@ if __name__ == '__main__':
                 print('cost: ', round(cost, 4))
                 result = sess.run(merged, feed_dict)
                 writer.add_summary(result, i)
+        else:
+            break
