@@ -174,11 +174,14 @@ if __name__ == '__main__':
             _, cost, state, pred = sess.run([model.train_op, model.cost, model.cell_final_state, model.pred],
                                             feed_dict=feed_dict)
 
+            # print("res", res)
+            # print("pred", pred)
+
             # plotting
             plt.plot(xs[0, :], res[0].flatten(), 'r', xs[0, :], pred.flatten()[:TIME_STEPS], 'b--')
             plt.ylim((-1, np.max(res)+10))
             plt.draw()
-            plt.pause(0.02)
+            plt.pause(0.01)
 
             if i % 20 == 0:
                 print('cost: ', round(cost, 4))
