@@ -1,64 +1,76 @@
+import time
 from keras.layers.core import Dense, Activation, Dropout
 from keras.layers.recurrent import LSTM
 from keras.models import Sequential
-# import lstm, time
+import lstm_helper, time
 
+import numpy as np
 import random
 
 from Blockchain_test import return_data
 
 # Load data from Blockchain_test.py
-y, X = return_data()
+matrix = return_data()
+matrix = matrix[0] # Bitcoin price only
 
+# N_FEATURES = len(matrix)
 
 BATCH_START = 0
 BATCH_SIZE = 30
 TIME_STEPS = 5
 
-INPUT_SIZE = len(X) # Amount of features
+INPUT_SIZE = len(matrix)-1 # Amount of features
 OUTPUT_SIZE = 1 # Bitcoin price
 
 TRAIN_TEST_RATIO = 0.7
 CELL_SIZE = 10
 LR = 10
+EPOCHS = 1
 
+train_X, train_y, test_X, test_y = lstm_helper.load_data(matrix, TIME_STEPS, False)
 
-# Split data into training and test sets
-def split_train_test(y, X, TIME_STEPS, BATCH_START, TRAIN_TEST_RATIO):
-    # The list that is going to contain the sequences
-    seq_list_y = []
-    seq_list_X = []
+N_BATCHES = int(np.size(train_X)/TIME_STEPS)
+N_FEATURES = 1
 
-    # Devide data in batches of TIME_STEPS length starting at BATCH_START
-    while BATCH_START + TIME_STEPS < len(y)-len(y)%TIME_STEPS:
-        seq_list_y.append(y[BATCH_START:BATCH_START + TIME_STEPS])
+# Build model
+model = Sequential()
 
-        features = []
-        for feat in X:
-            features.append(feat[BATCH_START:BATCH_START + TIME_STEPS])
-        seq_list_X.append(features)
+model.add(LSTM(
+    input_dim = 1,
+    output_dim = TIME_STEPS,
+    return_sequences = True))
+model.add(Dropout(0.2))
 
-        BATCH_START += TIME_STEPS
+model.add(LSTM(
+    100,
+    return_sequences = False,
+    ))
+model.add(Dropout(0.2))
 
-    amount_of_batches_train = int(len(seq_list_y)*TRAIN_TEST_RATIO)
+model.add(Dense(
+    output_dim = 1
+    ))
+model.add(Activation('linear'))
 
-    train_y = []
-    train_X = []
+start = time.time()
+model.compile(loss = 'mse', optimizer = 'rmsprop')
 
-    # Randomly devide data into training and test data
-    for i in range(0, amount_of_batches_train):
-        random_int = random.randint(0, len(seq_list_y)-1)
+print('compilation time : ', time.time() - start)
 
-        train_y.append(seq_list_y[random_int])
-        train_X.append(seq_list_X[random_int])
+print(train_X.reshape((N_FEATURES, N_BATCHES, TIME_STEPS)))
 
-        del seq_list_y[random_int]
-        del seq_list_X[random_int]
+# Train the model
+model.fit(
+    train_X,
+    train_y,
+    batch_size = 512,
+    epochs = EPOCHS,
+    validation_split = 0.05
+)
 
-    test_Y = seq_list_y
-    test_X = seq_list_X
+print(test_X)
 
-    return train_y, train_X, test_Y, test_X
-
-train_y, train_X, test_Y, test_X = split_train_test(y, X, TIME_STEPS, BATCH_START, TRAIN_TEST_RATIO)
-
+# Plot
+predictions = lstm_helper.predict_sequences_multiple(model, test_X, 50, TIME_STEPS)
+print(predictions)
+lstm_helper.plot_results_multiple(predictions, test_y, TIME_STEPS)

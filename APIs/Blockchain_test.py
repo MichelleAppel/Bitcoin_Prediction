@@ -85,11 +85,11 @@ def return_data():
     y = matrix[0]
     X = matrix[1:]
 
-    return y, X
+    return np.array(matrix)
 
 return_data()
 
-y, X = return_data()
+matrix = return_data()
 
 
 # # Show plots of data
