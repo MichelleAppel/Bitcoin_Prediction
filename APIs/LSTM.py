@@ -14,9 +14,9 @@ NORMALISATION = True
 DENORMALISATION = True
 
 BATCH_SIZE = 256
-SEQ_LEN = 10
-PREDICTION_LEN = 4
-EPOCHS = 1
+SEQ_LEN = 50
+PREDICTION_LEN = 5
+EPOCHS = 5
 
 INPUT_DIM = len(matrix) # Amount of features
 # N_FEATURES = len(matrix)

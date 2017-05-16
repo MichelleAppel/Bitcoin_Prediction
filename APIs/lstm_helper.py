@@ -9,10 +9,10 @@ import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore")
 
-def plot_results_multiple(predicted_data, true_data, prediction_len, denormalise, i_list):
+def plot_results_multiple(predicted_data, true_data, prediction_len, denormalize, i_list):
     true_data = true_data.reshape(len(true_data),1)
 
-    if denormalise:
+    if denormalize:
         true_data = denormalise_windows(true_data, i_list)
 
     fig = plt.figure(facecolor='white')
@@ -74,6 +74,8 @@ def normalise_windows(window_data):
 def denormalise_windows(window_data, i_list):
     row = i_list[-1]
     i_list = i_list[row:-1]
+
+    # print(np.array(window_data).shape, np.array(i_list).shape)
 
     denormalised_data = []
 
