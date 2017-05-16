@@ -19,8 +19,6 @@ PREDICTION_LEN = 5
 EPOCHS = 5
 
 INPUT_DIM = len(matrix) # Amount of features
-# N_FEATURES = len(matrix)
-N_FEATURES = 1
 
 OUTPUT_SIZE = 1 # Bitcoin price
 
