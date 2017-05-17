@@ -28,8 +28,6 @@ def plot_results_multiple(predicted_data, true_data, prediction_len, denormalize
 
 
 def load_data(matrix, seq_len, normalise_window):
-    # f = open(filename, 'r').read()
-    # data = f.split('\n')
 
     sequence_length = seq_len + 1
     result = []
@@ -74,8 +72,9 @@ def normalise_windows(window_data):
 def denormalise_windows(window_data, i_list):
     row = i_list[-1]
     i_list = i_list[row:-1]
-
-    # print(np.array(window_data).shape, np.array(i_list).shape)
+    #
+    # print("shape window_data", np.array(window_data).shape)
+    # print("shape i_list", np.array(i_list).shape)
 
     denormalised_data = []
 
@@ -145,6 +144,15 @@ def predict_sequences_multiple(model, data, window_size, prediction_len, denorma
         prediction_seqs.append(predicted)
 
     if denormalise:
+        prediction_seqs = np.array(prediction_seqs)
+        original_shape = prediction_seqs.shape
+        prediction_seqs = prediction_seqs.reshape((prediction_seqs).size,1)
+
         prediction_seqs = denormalise_windows(prediction_seqs, i_list)
+
+        prediction_seqs = np.array(prediction_seqs)
+        prediction_seqs = prediction_seqs.reshape(original_shape)
+
+        prediction_seqs = prediction_seqs.tolist()
 
     return prediction_seqs
