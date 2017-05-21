@@ -14,8 +14,9 @@ from Blockchain_test import return_data
 matrix = return_data()
 matrix = matrix[0][300:] # Bitcoin price only, before 300 only zeros
 
-# Whether the data should be normalised
-NORMALISATION = False
+
+# Parameters
+NORMALISATION = False # Whether the data should be normalised
 
 TRAIN_TEST_RATIO = 0.7 # The train / test ratio
 
@@ -51,8 +52,8 @@ model.add(Dense(
     output_dim = OUTPUT_DIM,
     ))
 
-rms = optimizers.RMSprop(lr = LEARNING_RATE)
-model.compile(loss = 'mse', optimizer = rms)
+rms = optimizers.RMSprop(lr = LEARNING_RATE) # Optimizer
+model.compile(loss = 'mse', optimizer = rms) # Compile
 
 # Train the model
 model_fit = model.fit(
@@ -63,11 +64,9 @@ model_fit = model.fit(
     validation_split = VALIDATION_SPLIT,
 )
 
-lstm.plot_loss(model_fit)
+lstm.plot_loss(model_fit) # Plot the training and validation loss
 
 # Normalised
-predictions = lstm.predict_sequences_multiple(model, test_X, SEQ_LEN, PREDICTION_LEN)
-print("pred", len(predictions), predictions)
-print("real", len(test_y), test_y)
-lstm.plot_results_multiple(predictions, test_y, PREDICTION_LEN, PREDICTION_DELAY)
-print("Error: ", lstm.error(predictions, test_y, PREDICTION_DELAY))
+predictions = lstm.predict_sequences_multiple(model, test_X, SEQ_LEN, PREDICTION_LEN) # Get predictions
+lstm.plot_results_multiple(predictions, test_y, PREDICTION_LEN, PREDICTION_DELAY) # Plot predictions
+print("Error: ", lstm.error(predictions, test_y, PREDICTION_DELAY)) # Print the error
