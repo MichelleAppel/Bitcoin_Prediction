@@ -12,7 +12,7 @@ from Blockchain_test import return_data
 
 # Load data from Blockchain_test.py
 matrix = return_data()
-matrix = matrix[0][300:] # Bitcoin price only
+matrix = matrix[0][300:] # Bitcoin price only, before 300 only zeros
 
 # Whether the data should be normalised
 NORMALISATION = False
