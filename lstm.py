@@ -7,7 +7,15 @@ from keras.layers.recurrent import LSTM
 from keras.models import Sequential
 import matplotlib.pyplot as plt
 
+
 warnings.filterwarnings("ignore") # Ignore warnings
+
+# TODO:
+# Axis labels V
+# Plot train and test data V
+# Normalisation
+# Early stopping
+# Fully connected/Dense layer : Dropout
 
 # Gets a matrix as input and divides it into training and test sets
 def load_data(matrix, seq_len, pred_len, pred_delay, normalise_window, ratio):
@@ -22,18 +30,19 @@ def load_data(matrix, seq_len, pred_len, pred_delay, normalise_window, ratio):
     row = round(ratio * result.shape[0]) # Up until this row the data is training data
 
     train = result[:int(row), :] # Get training data
-    np.random.shuffle(train) # Random shuffle trainingdata
+
+    # Split in x and y
     x_train = train[:, :seq_len] # The sequence of the training data
     y_train = train[:, -pred_len] # The to be predicted values of the training data
+    # y_train = np.random.rand(len(y_train)) # Noise experiment
+
     x_test = result[int(row):, :seq_len] # The sequence of the test data
     y_test = result[int(row):, -pred_len] # The to be predicted values of the test data
+    # y_test = np.random.rand(len(y_test)) # Noise experiment
 
     if normalise_window: # Normalise
         mu = np.mean(matrix) # Mean
         sigma = np.std(matrix) # Deviation
-
-        # y_train = (y_train - mu) / sigma
-        # y_test = (y_test - mu) / sigma
 
         x_train = (x_train - mu) / sigma
         x_test = (x_test - mu) / sigma
@@ -42,6 +51,23 @@ def load_data(matrix, seq_len, pred_len, pred_delay, normalise_window, ratio):
     x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1)) # Reshape, because expected lstm_1_input to have 3 dimensions
 
     return [x_train, y_train, x_test, y_test]
+
+# Plots the train and test set
+# time_step_of_seq is the nth day of the sequence that is to be plotted: 0 is the first day, -1 is the last day
+def plot_train_test_set(train_X, train_y, test_X, test_y, time_step_of_seq):
+    # Plots the first element of each training set sequence (X)
+    plt.plot(train_X.reshape(train_X.shape[0], train_X.shape[1])[:, time_step_of_seq])
+
+    # Plots the first element of each training set result (y)
+    plt.plot(train_y)
+    plt.show()
+
+    # Plots the first element of each test set sequence (X)
+    plt.plot(test_X.reshape(test_X.shape[0], test_X.shape[1])[:, time_step_of_seq])
+
+    # Plots the first element of each test set result (y)
+    plt.plot(test_y)
+    plt.show()
 
 
 def predict_sequences_multiple(model, data, window_size, prediction_len):
@@ -61,12 +87,12 @@ def predict_sequences_multiple(model, data, window_size, prediction_len):
 
 
 # Plots the results
-def plot_results_multiple(predicted_data, true_data, prediction_len, prediction_delay):
+def plot_results_multiple(predicted_data, true_data, prediction_len, prediction_delay, set):
     true_data = true_data.reshape(len(true_data),1) # reshape true data from batches to one long sequence
 
     fig = plt.figure(facecolor='white')
     ax = fig.add_subplot(111)
-    ax.plot(true_data, label='True Data')
+    ax.plot(true_data, label="True Data " + set)
 
     if prediction_len == 1:
         plt.plot(predicted_data, label='Prediction')
@@ -77,6 +103,10 @@ def plot_results_multiple(predicted_data, true_data, prediction_len, prediction_
             padding = [None for p in range(i * prediction_len)]
             plt.plot(padding + data, label='Prediction')
             plt.legend()
+
+    plt.title('Bitcoin price prediction in USD from ' + set)
+    plt.ylabel('BTC/USD')
+    plt.xlabel('time')
 
     plt.show()
 
@@ -89,6 +119,7 @@ def plot_loss(model_fit):
     plt.xlabel('epoch')
     plt.legend(['train', 'validation'], loc='upper left')
     plt.show()
+
 
 # Compute mean error
 def error(predicted, real, prediction_delay):
