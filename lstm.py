@@ -10,46 +10,41 @@ import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore") # Ignore warnings
 
-# TODO:
-# Axis labels V
-# Plot train and test data V
-# Normalisation
-# Early stopping
-# Fully connected/Dense layer : Dropout
 
 # Gets a matrix as input and divides it into training and test sets
 def load_data(matrix, seq_len, pred_len, pred_delay, normalise_window, ratio):
     sequence_length = seq_len + pred_len + pred_delay # The length of the slice that is taken from the data
 
     result = [] # List that is going to contain the sequences
-    for index in range(len(matrix) - sequence_length): # Take every possible sequence from beginning to end
-        result.append(matrix[index: index + sequence_length]) # Append sequence to result list
+    for index in range(len(matrix[0]) - sequence_length): # Take every possible sequence from beginning to end
+        result.append(matrix[:, index: index + sequence_length]) # Append sequence to result list
 
     result = np.array(result) # Convert result to numpy array
 
     row = round(ratio * result.shape[0]) # Up until this row the data is training data
 
-    train = result[:int(row), :] # Get training data
+    train = result[:int(row), :, :] # Get training data
 
     # Split in x and y
-    x_train = train[:, :seq_len] # The sequence of the training data
-    y_train = train[:, -pred_len] # The to be predicted values of the training data
+    x_train = train[:, :, :seq_len] # The sequence of the training data
+    y_train = train[:, 0, -pred_len] # The to be predicted values of the training data
     # y_train = np.random.rand(len(y_train)) # Noise experiment
 
-    x_test = result[int(row):, :seq_len] # The sequence of the test data
-    y_test = result[int(row):, -pred_len] # The to be predicted values of the test data
+    x_test = result[int(row):, :, :seq_len] # The sequence of the test data
+    y_test = result[int(row):, 0, -pred_len] # The to be predicted values of the test data
     # y_test = np.random.rand(len(y_test)) # Noise experiment
 
+    x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[2], x_train.shape[1])) # Reshape, because expected lstm_1_input to have 3 dimensions
+    x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[2], x_test.shape[1])) # Reshape, because expected lstm_1_input to have 3 dimensions
+
     if normalise_window: # Normalise
-        mu = np.mean(matrix) # Mean
-        sigma = np.std(matrix) # Deviation
+        mu = np.mean(matrix, axis=1) # Mean
+        sigma = np.std(matrix, axis=1) # Deviation
 
         x_train = (x_train - mu) / sigma
         x_test = (x_test - mu) / sigma
 
-    x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1)) # Reshape, because expected lstm_1_input to have 3 dimensions
-    x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1)) # Reshape, because expected lstm_1_input to have 3 dimensions
-
+        print(x_train[0:15])
     return [x_train, y_train, x_test, y_test]
 
 

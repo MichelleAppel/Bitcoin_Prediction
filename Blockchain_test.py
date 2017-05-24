@@ -82,9 +82,6 @@ def return_data():
 
     matrix = match_on_date([average_USD_price, blockchain_size, average_block_size])
 
-    y = matrix[0]
-    X = matrix[1:]
-
     return np.array(matrix)
 
 return_data()

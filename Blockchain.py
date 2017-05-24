@@ -205,7 +205,7 @@ def return_data():
         for feature in list_of_features[0]:
             list_of_dates.append(feature[0])
 
-        print(list_of_dates)
+        # print(list_of_dates)
 
         matrix = []
 
@@ -234,7 +234,5 @@ def return_data():
                             transactions_per_block, median_confirmation_time, hash_rate, difficulty, miners_revenue,
                             total_transaction_fees, cost_per_transaction])
 
-    y = matrix[0]
-    X = matrix[1:]
 
-    return y, X
+    return np.array(matrix)
