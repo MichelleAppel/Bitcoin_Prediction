@@ -52,21 +52,31 @@ def load_data(matrix, seq_len, pred_len, pred_delay, normalise_window, ratio):
 
     return [x_train, y_train, x_test, y_test]
 
+
 # Plots the train and test set
 # time_step_of_seq is the nth day of the sequence that is to be plotted: 0 is the first day, -1 is the last day
 def plot_train_test_set(train_X, train_y, test_X, test_y, time_step_of_seq):
-    # Plots the first element of each training set sequence (X)
-    plt.plot(train_X.reshape(train_X.shape[0], train_X.shape[1])[:, time_step_of_seq])
+    # Trainingset
+    trainx = train_X[:, time_step_of_seq, :]
+    print(trainx)
 
-    # Plots the first element of each training set result (y)
-    plt.plot(train_y)
+    fig = plt.figure(facecolor='white')
+    ax = fig.add_subplot(111)
+    ax.plot(trainx, label="train_X")
+    ax.plot(train_y, label="train_y")
+
+    plt.legend()
     plt.show()
 
-    # Plots the first element of each test set sequence (X)
-    plt.plot(test_X.reshape(test_X.shape[0], test_X.shape[1])[:, time_step_of_seq])
+    # Testset
+    testx = test_X[:, time_step_of_seq, :]
 
-    # Plots the first element of each test set result (y)
-    plt.plot(test_y)
+    fig = plt.figure(facecolor='white')
+    ax = fig.add_subplot(111)
+    ax.plot(testx, label="test_X")
+    ax.plot(test_y, label="test_y")
+
+    plt.legend()
     plt.show()
 
 
