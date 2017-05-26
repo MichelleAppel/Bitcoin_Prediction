@@ -23,28 +23,45 @@ def load_data(matrix, seq_len, pred_len, pred_delay, normalise_window, ratio):
 
     row = round(ratio * result.shape[0]) # Up until this row the data is training data
 
-    train = result[:int(row), :, :] # Get training data
-
     # Split in x and y
-    x_train = train[:, :, :seq_len] # The sequence of the training data
-    y_train = train[:, 0, -pred_len] # The to be predicted values of the training data
+    x_train = result[:int(row), :, :seq_len] # The sequence of the training data
+    y_train = result[:int(row), 0, -pred_len] # The to be predicted values of the training data
     # y_train = np.random.rand(len(y_train)) # Noise experiment
 
     x_test = result[int(row):, :, :seq_len] # The sequence of the test data
     y_test = result[int(row):, 0, -pred_len] # The to be predicted values of the test data
     # y_test = np.random.rand(len(y_test)) # Noise experiment
 
-    x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[2], x_train.shape[1])) # Reshape, because expected lstm_1_input to have 3 dimensions
-    x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[2], x_test.shape[1])) # Reshape, because expected lstm_1_input to have 3 dimensions
+
 
     if normalise_window: # Normalise
-        mu = np.mean(matrix, axis=1) # Mean
-        sigma = np.std(matrix, axis=1) # Deviation
+        matrix = (matrix.reshape(matrix.shape[1], matrix.shape[0]))
+        mu = np.mean(matrix, axis=0) # Mean
+        print(mu)
+        sigma = np.abs(np.max(matrix, axis=0) - np.min(matrix, axis=0)) # Deviation
+        print(sigma)
 
-        x_train = (x_train - mu) / sigma
-        x_test = (x_test - mu) / sigma
+        matrix = (matrix - mu) / sigma
+        print("mean", matrix.mean(axis=0))
+        print("max", matrix.max(axis=0))
+        print("min", matrix.min(axis=0))
 
-        print(x_train[0:15])
+        matrix = (matrix.reshape(matrix.shape[1], matrix.shape[0]))
+
+        result = []  # List that is going to contain the sequences
+        for index in range(len(matrix[0]) - sequence_length):  # Take every possible sequence from beginning to end
+            result.append(matrix[:, index: index + sequence_length])  # Append sequence to result list
+
+        result = np.array(result)  # Convert result to numpy array
+
+        # Split in x and y
+        x_train = result[:int(row), :, :seq_len]  # The sequence of the training data
+        x_test = result[int(row):, :, :seq_len]  # The sequence of the test data
+
+
+    x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[2], x_train.shape[1]))  # Reshape, because expected lstm_1_input to have 3 dimensions
+    x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[2], x_test.shape[1]))  # Reshape, because expected lstm_1_input to have 3 dimensions
+
     return [x_train, y_train, x_test, y_test]
 
 
@@ -52,24 +69,23 @@ def load_data(matrix, seq_len, pred_len, pred_delay, normalise_window, ratio):
 # time_step_of_seq is the nth day of the sequence that is to be plotted: 0 is the first day, -1 is the last day
 def plot_train_test_set(train_X, train_y, test_X, test_y, time_step_of_seq):
     # Trainingset
-    trainx = train_X[:, time_step_of_seq, :]
-    print(trainx)
+    trainx = train_X.reshape((train_X.shape[0], train_X.shape[2], train_X.shape[1]))[:, :, time_step_of_seq]
 
     fig = plt.figure(facecolor='white')
     ax = fig.add_subplot(111)
     ax.plot(trainx, label="train_X")
-    ax.plot(train_y, label="train_y")
+    # ax.plot(train_y, label="train_y")
 
     plt.legend()
     plt.show()
 
     # Testset
-    testx = test_X[:, time_step_of_seq, :]
+    testx = test_X.reshape((test_X.shape[0], test_X.shape[2], test_X.shape[1]))[:, :, time_step_of_seq]
 
     fig = plt.figure(facecolor='white')
     ax = fig.add_subplot(111)
     ax.plot(testx, label="test_X")
-    ax.plot(test_y, label="test_y")
+    # ax.plot(test_y, label="test_y")
 
     plt.legend()
     plt.show()

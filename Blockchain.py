@@ -234,5 +234,4 @@ def return_data():
                             transactions_per_block, median_confirmation_time, hash_rate, difficulty, miners_revenue,
                             total_transaction_fees, cost_per_transaction])
 
-
     return np.array(matrix)

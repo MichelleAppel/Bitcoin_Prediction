@@ -1,8 +1,11 @@
 from keras.layers.core import Dense, Dropout
+from keras.layers.normalization import BatchNormalization
 from keras.layers.recurrent import LSTM
 from keras import optimizers
 from keras.models import Sequential
 from keras import callbacks
+
+import matplotlib.pyplot as plt
 
 # TODO:
 # Scale Y-axis of loss V
@@ -15,7 +18,7 @@ from keras import callbacks
 # lstm.py
 import lstm
 import numpy as np
-from Blockchain import return_data
+from Blockchain_test import return_data
 
 # Load data from Blockchain_test.py
 matrix = return_data()
@@ -24,26 +27,25 @@ matrix = matrix[:, 300:] # Bitcoin price only, before 300 only zeros
 # ----------------------------------------------------- Parameters --------------------------------------------------- #
 
 # Parameters
-NORMALISATION = False # Whether the data should be normalised
-
-
+NORMALISATION = True # Whether the data should be normalised
 
 TRAIN_TEST_RATIO = 0.9 # The train / test ratio
 
-SEQ_LEN = 15 # The length of the sequence
+SEQ_LEN = 5 # The length of the sequence
 PREDICTION_LEN = 1 # The amount of predicted values
 PREDICTION_DELAY = 0 # Amount of time between sequence and prediction, 0 is next timestep after the sequence
 
 NO_FEATURES = len(matrix)
-UNITS = 128 # The amount of units in the LSTM
+UNITS = 256 # The amount of units in the LSTM
 OUTPUT_DIM = 1 # Bitcoin price
 
-LEARNING_RATE = 0.02 # Learning rate
+LEARNING_RATE = 0.01 # Learning rate
 
-BATCH_SIZE = 16 # The batch size
-EPOCHS = 150 # The amount of epochs
+BATCH_SIZE = 32 # The batch size
+EPOCHS = 300 # The amount of epochs
 
-VALIDATION_SPLIT = 0.3
+DROPOUT_RATIO = 0.3
+VALIDATION_SPLIT = 0.2
 
 
 # --------------------------------------------------- Retrieve data -------------------------------------------------- #
@@ -54,8 +56,8 @@ train_X, train_y, test_X, test_y = lstm.load_data(
     )
 
 # Plot the train and test data
-time_step_of_seq = 0
-# lstm.plot_train_test_set(train_X, train_y, test_X, test_y, time_step_of_seq)
+time_step_of_seq = 0 # 0 for first step, -1 for last step
+lstm.plot_train_test_set(train_X, train_y, test_X, test_y, time_step_of_seq)
 
 
 # ---------------------------------------------------- Build model --------------------------------------------------- #
@@ -71,12 +73,12 @@ model.add(Dense(
     output_dim = OUTPUT_DIM,
     ))
 
-model.add(Dropout(0.3))
+model.add(Dropout(DROPOUT_RATIO))
 
 rms = optimizers.RMSprop(lr = LEARNING_RATE) # Optimizer
 model.compile(loss = 'mse', optimizer = rms) # Compile
 
-callbacks = [callbacks.EarlyStopping(monitor='val_loss', min_delta=5000, patience=20, mode='auto')]
+callbacks = [callbacks.EarlyStopping(monitor='val_loss', min_delta=1000, patience=10, mode='auto')]
 
 # Train the model
 model_fit = model.fit(
