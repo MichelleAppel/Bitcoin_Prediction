@@ -18,11 +18,20 @@ import matplotlib.pyplot as plt
 # lstm.py
 import lstm
 import numpy as np
-from Blockchain_test import return_data
+from Blockchain import return_data
 
 # Load data from Blockchain_test.py
 matrix = return_data()
 matrix = matrix[:, 300:] # Bitcoin price only, before 300 only zeros
+
+# plt.plot(matrix[0])
+# plt.show()
+#
+# plt.plot(matrix[1])
+# plt.show()
+#
+# plt.plot(matrix[2])
+# plt.show()
 
 # ----------------------------------------------------- Parameters --------------------------------------------------- #
 
@@ -31,7 +40,7 @@ NORMALISATION = True # Whether the data should be normalised
 
 TRAIN_TEST_RATIO = 0.9 # The train / test ratio
 
-SEQ_LEN = 5 # The length of the sequence
+SEQ_LEN = 15 # The length of the sequence
 PREDICTION_LEN = 1 # The amount of predicted values
 PREDICTION_DELAY = 0 # Amount of time between sequence and prediction, 0 is next timestep after the sequence
 
@@ -41,10 +50,10 @@ OUTPUT_DIM = 1 # Bitcoin price
 
 LEARNING_RATE = 0.01 # Learning rate
 
-BATCH_SIZE = 32 # The batch size
+BATCH_SIZE = 64 # The batch size
 EPOCHS = 300 # The amount of epochs
 
-DROPOUT_RATIO = 0.3
+DROPOUT_RATIO = 0.1
 VALIDATION_SPLIT = 0.2
 
 
@@ -57,7 +66,7 @@ train_X, train_y, test_X, test_y = lstm.load_data(
 
 # Plot the train and test data
 time_step_of_seq = 0 # 0 for first step, -1 for last step
-lstm.plot_train_test_set(train_X, train_y, test_X, test_y, time_step_of_seq)
+# lstm.plot_train_test_set(train_X, train_y, test_X, test_y, time_step_of_seq)
 
 
 # ---------------------------------------------------- Build model --------------------------------------------------- #
@@ -78,7 +87,7 @@ model.add(Dropout(DROPOUT_RATIO))
 rms = optimizers.RMSprop(lr = LEARNING_RATE) # Optimizer
 model.compile(loss = 'mse', optimizer = rms) # Compile
 
-callbacks = [callbacks.EarlyStopping(monitor='val_loss', min_delta=1000, patience=10, mode='auto')]
+callbacks = [callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=0, mode='auto')]
 
 # Train the model
 model_fit = model.fit(

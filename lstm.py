@@ -15,6 +15,7 @@ warnings.filterwarnings("ignore") # Ignore warnings
 def load_data(matrix, seq_len, pred_len, pred_delay, normalise_window, ratio):
     sequence_length = seq_len + pred_len + pred_delay # The length of the slice that is taken from the data
 
+
     result = [] # List that is going to contain the sequences
     for index in range(len(matrix[0]) - sequence_length): # Take every possible sequence from beginning to end
         result.append(matrix[:, index: index + sequence_length]) # Append sequence to result list
@@ -32,21 +33,16 @@ def load_data(matrix, seq_len, pred_len, pred_delay, normalise_window, ratio):
     y_test = result[int(row):, 0, -pred_len] # The to be predicted values of the test data
     # y_test = np.random.rand(len(y_test)) # Noise experiment
 
-
-
     if normalise_window: # Normalise
-        matrix = (matrix.reshape(matrix.shape[1], matrix.shape[0]))
-        mu = np.mean(matrix, axis=0) # Mean
-        print(mu)
-        sigma = np.abs(np.max(matrix, axis=0) - np.min(matrix, axis=0)) # Deviation
-        print(sigma)
+        mu = np.mean(matrix, axis=1) # Mean
+        print("mu", mu)
 
+        sigma = np.abs(np.max(matrix, axis=1) - np.min(matrix, axis=1)) # Deviation
+        print("sigma", sigma)
+
+        matrix = matrix.transpose()
         matrix = (matrix - mu) / sigma
-        print("mean", matrix.mean(axis=0))
-        print("max", matrix.max(axis=0))
-        print("min", matrix.min(axis=0))
-
-        matrix = (matrix.reshape(matrix.shape[1], matrix.shape[0]))
+        matrix = matrix.transpose()
 
         result = []  # List that is going to contain the sequences
         for index in range(len(matrix[0]) - sequence_length):  # Take every possible sequence from beginning to end
