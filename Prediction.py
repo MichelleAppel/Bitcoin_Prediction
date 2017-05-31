@@ -14,6 +14,10 @@ import matplotlib.pyplot as plt
 # per 1-5 epochs de plots met voorspelde Bitcoin prices op train/validatie set naar disk wegschrijven
 # wijzigen van je feature vectors. Heeft het toevoegen van meer features een positief effect op het voorspellen van de Bitcoin prijs? V
 
+# Gradient clipping (2)
+# Andere papers evaluatie mse
+# Hoeveelheid training data verhogen en plotten
+# Baseline
 
 # lstm.py
 import lstm
@@ -22,16 +26,7 @@ from Blockchain import return_data
 
 # Load data from Blockchain_test.py
 matrix = return_data()
-matrix = matrix[:, 300:] # Bitcoin price only, before 300 only zeros
-
-# plt.plot(matrix[0])
-# plt.show()
-#
-# plt.plot(matrix[1])
-# plt.show()
-#
-# plt.plot(matrix[2])
-# plt.show()
+matrix = matrix[:, 400:] # Bitcoin price only, before 300 only zeros
 
 # ----------------------------------------------------- Parameters --------------------------------------------------- #
 
@@ -40,22 +35,21 @@ NORMALISATION = True # Whether the data should be normalised
 
 TRAIN_TEST_RATIO = 0.9 # The train / test ratio
 
-SEQ_LEN = 15 # The length of the sequence
+SEQ_LEN = 10 # The length of the sequence
 PREDICTION_LEN = 1 # The amount of predicted values
 PREDICTION_DELAY = 0 # Amount of time between sequence and prediction, 0 is next timestep after the sequence
 
 NO_FEATURES = len(matrix)
-UNITS = 256 # The amount of units in the LSTM
+UNITS = 64 # The amount of units in the LSTM
 OUTPUT_DIM = 1 # Bitcoin price
 
-LEARNING_RATE = 0.01 # Learning rate
+LEARNING_RATE = 0.001 # Learning rate
 
-BATCH_SIZE = 64 # The batch size
-EPOCHS = 300 # The amount of epochs
+BATCH_SIZE = 32 # The batch size
+EPOCHS = 500 # The amount of epochs
 
-DROPOUT_RATIO = 0.1
-VALIDATION_SPLIT = 0.2
-
+DROPOUT_RATIO = 0.2
+VALIDATION_SPLIT = 0.1
 
 # --------------------------------------------------- Retrieve data -------------------------------------------------- #
 
@@ -75,28 +69,30 @@ model = Sequential()
 
 model.add(LSTM(
     input_dim = NO_FEATURES, # input dim is number of features
-    units = UNITS, # the size of the LSTM’s hidden state
+    units = UNITS # the size of the LSTM’s hidden state
     ))
+
+model.add(Dropout(DROPOUT_RATIO))
 
 model.add(Dense(
     output_dim = OUTPUT_DIM,
     ))
 
-model.add(Dropout(DROPOUT_RATIO))
 
 rms = optimizers.RMSprop(lr = LEARNING_RATE) # Optimizer
 model.compile(loss = 'mse', optimizer = rms) # Compile
 
-callbacks = [callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=0, mode='auto')]
+callbacks = [callbacks.EarlyStopping(monitor='val_loss', min_delta=20000, patience=40, mode='auto')]
+# Plot predictions callback
+# Plot gradients
 
 # Train the model
 model_fit = model.fit(
     train_X,
     train_y,
-    batch_size = BATCH_SIZE,
     epochs = EPOCHS,
     validation_split = VALIDATION_SPLIT,
-    callbacks = callbacks
+    # callbacks = callbacks
 )
 
 lstm.plot_loss(model_fit) # Plot the training and validation loss

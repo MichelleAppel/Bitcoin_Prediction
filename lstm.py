@@ -1,10 +1,6 @@
-import time
 import warnings
 import numpy as np
 from numpy import newaxis
-from keras.layers.core import Dense, Activation, Dropout
-from keras.layers.recurrent import LSTM
-from keras.models import Sequential
 import matplotlib.pyplot as plt
 
 
@@ -35,14 +31,13 @@ def load_data(matrix, seq_len, pred_len, pred_delay, normalise_window, ratio):
 
     if normalise_window: # Normalise
         mu = np.mean(matrix, axis=1) # Mean
-        print("mu", mu)
 
-        sigma = np.abs(np.max(matrix, axis=1) - np.min(matrix, axis=1)) # Deviation
-        print("sigma", sigma)
+        # sigma = np.abs(np.max(matrix, axis=1) - np.min(matrix, axis=1)) # Deviation
+        sigma = np.std(matrix, axis=1)
 
-        matrix = matrix.transpose()
-        matrix = (matrix - mu) / sigma
-        matrix = matrix.transpose()
+        matrix = matrix.transpose() # Transpose
+        matrix = (matrix - mu) / sigma # Normalise
+        matrix = matrix.transpose() # Transpose back
 
         result = []  # List that is going to contain the sequences
         for index in range(len(matrix[0]) - sequence_length):  # Take every possible sequence from beginning to end
@@ -134,6 +129,7 @@ def plot_loss(model_fit):
     plt.title('model loss')
     plt.ylabel('loss')
     plt.xlabel('epoch')
+    # plt.ylim(0, 100000)
     plt.legend(['train', 'validation'], loc='upper left')
     plt.show()
 
@@ -147,8 +143,6 @@ def error(predicted, real, prediction_delay):
         errors.append(np.abs(p-r))
     mean_error = np.array(errors).mean()
     return mean_error
-
-
 
 
 def predict_point_by_point(model, data):
