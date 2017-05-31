@@ -120,7 +120,7 @@ def plot_results_multiple(predicted_data, true_data, prediction_len, prediction_
     plt.ylabel('BTC/USD')
     plt.xlabel('time')
 
-    plt.show()
+    return plt
 
 def plot_loss(model_fit):
     # summarize history for accuracy
@@ -131,7 +131,7 @@ def plot_loss(model_fit):
     plt.xlabel('epoch')
     # plt.ylim(0, 100000)
     plt.legend(['train', 'validation'], loc='upper left')
-    plt.show()
+    return plt
 
 
 # Compute mean error
