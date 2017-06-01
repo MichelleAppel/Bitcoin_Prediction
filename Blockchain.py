@@ -224,14 +224,11 @@ def return_data():
 
         return matrix
 
-    # # All
-    # matrix = match_by_date([average_USD_price, blockchain_size, n_transactions_per_day, average_block_size, no_orphaned_blocks,
-    #                         transactions_per_block, median_confirmation_time, BTC_unlimited_support, hash_rate, difficulty,
-    #                         miners_revenue, total_transaction_fees, total_transaction_fees_USD, cost_per_transaction,
-    #                         cost_per_transaction_percent])
-
-    matrix = match_by_date([average_USD_price, blockchain_size, n_transactions_per_day, average_block_size, no_orphaned_blocks,
-                            transactions_per_block, median_confirmation_time, hash_rate, difficulty, miners_revenue,
-                            total_transaction_fees, cost_per_transaction])
+    matrix = match_by_date([average_USD_price, market_capitalization, n_transactions_per_day,
+                            estimated_USD_transaction_value, BTC_in_circulation, blockchain_size, average_block_size,
+                            no_orphaned_blocks, transactions_per_block, median_confirmation_time, miners_revenue,
+                            total_transaction_fees, cost_per_transaction, n_unique_addresses,
+                            total_number_of_transactions, n_transactions, n_transactions_exc_chains_longer_than_100,
+                            output_value, hash_rate])
 
     return np.array(matrix)
