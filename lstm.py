@@ -1,7 +1,7 @@
 import warnings
 import numpy as np
 from numpy import newaxis
-
+import matplotlib.pyplot as plt
 from keras.layers.core import Dense, Dropout
 from keras.layers.recurrent import LSTM
 from keras import optimizers
@@ -9,9 +9,9 @@ from keras.models import Sequential
 from keras import callbacks
 import os
 
-import matplotlib.pyplot as plt
 warnings.filterwarnings("ignore")  # Ignore warnings
 
+# ----------------------------------------------------- Load data ---------------------------------------------------- #
 
 # Gets a matrix as input and divides it into training and test sets
 def load_data(matrix, seq_len, pred_len, pred_delay, normalise_window, ratio):
@@ -62,6 +62,9 @@ def load_data(matrix, seq_len, pred_len, pred_delay, normalise_window, ratio):
     return [x_train, y_train, x_test, y_test]
 
 
+
+# ----------------------------------------------------- Plot data ---------------------------------------------------- #
+
 # Plots the train and test set
 # time_step_of_seq is the nth day of the sequence that is to be plotted: 0 is the first day, -1 is the last day
 def plot_train_test_set(train_X, train_y, test_X, test_y, time_step_of_seq):
@@ -87,8 +90,7 @@ def plot_train_test_set(train_X, train_y, test_X, test_y, time_step_of_seq):
     plt.legend()
     plt.show()
 
-
-
+# ------------------------------------------------- Predict sequences ------------------------------------------------ #
 
 def predict_sequences_multiple(model, data, window_size, prediction_len):
     # Predict sequence of window_size steps before shifting prediction run forward by prediction_len steps
@@ -105,6 +107,8 @@ def predict_sequences_multiple(model, data, window_size, prediction_len):
 
     return prediction_seqs
 
+
+# --------------------------------------------------- Plot results --------------------------------------------------- #
 
 # Plots the results
 def plot_results_multiple(predicted_data, true_data, prediction_len, prediction_delay, set):
@@ -130,6 +134,8 @@ def plot_results_multiple(predicted_data, true_data, prediction_len, prediction_
 
     return plt
 
+# ----------------------------------------------------- Plot loss ---------------------------------------------------- #
+
 # Plot the train and validation loss
 def plot_loss(model_fit):
     # summarize history for accuracy
@@ -142,6 +148,9 @@ def plot_loss(model_fit):
     plt.legend(['train', 'validation'], loc='upper left')
     return [plt, model_fit.history['val_loss']]
 
+
+# ---------------------------------------------------- Mean error ---------------------------------------------------- #
+
 # Compute mean error
 def error(predicted, real, prediction_delay):
     errors = []
@@ -152,7 +161,10 @@ def error(predicted, real, prediction_delay):
     mean_error = np.array(errors).mean()
     return mean_error
 
-def baseline_mse(data, prediction_delay):
+
+# ------------------------------------------------- Baseline error --------------------------------------------------- #
+
+def baseline_error(data, prediction_delay):
     total = 0
     test_length = len(data) - 1 - prediction_delay
 
@@ -162,6 +174,8 @@ def baseline_mse(data, prediction_delay):
     baseline_test = total / test_length
     return baseline_test
 
+
+# ------------------------------------------------- Train and predict ------------------------------------------------ #
 
 # Method that runs a training and a prediction
 def train_and_predict(matrix, NORMALISATION, TRAIN_TEST_RATIO, SEQ_LEN, PREDICTION_LEN, PREDICTION_DELAY, NO_FEATURES,
@@ -223,7 +237,7 @@ def train_and_predict(matrix, NORMALISATION, TRAIN_TEST_RATIO, SEQ_LEN, PREDICTI
     train_plot = plot_results_multiple(predictions_train, train_y, PREDICTION_LEN, PREDICTION_DELAY, "Train Set")  # Plot predictions
 
     train_error = error(predictions_train, train_y, PREDICTION_DELAY)
-    baseline_train = baseline_mse(train_y, PREDICTION_DELAY)
+    baseline_train = baseline_error(train_y, PREDICTION_DELAY)
     print("Error: ", train_error, " Baseline: ", baseline_train)  # Print the error
 
     # Predictions Test Set
@@ -231,17 +245,19 @@ def train_and_predict(matrix, NORMALISATION, TRAIN_TEST_RATIO, SEQ_LEN, PREDICTI
     test_plot = plot_results_multiple(predictions, test_y, PREDICTION_LEN, PREDICTION_DELAY, "Test Set")  # Plot predictions
 
     test_error = error(predictions, test_y, PREDICTION_DELAY)
-    baseline_test = baseline_mse(test_y, PREDICTION_DELAY)
+    baseline_test = baseline_error(test_y, PREDICTION_DELAY)
     print("Error: ", test_error, " Baseline: ", baseline_test)  # Print the error
 
     return [loss_plot, val_error, predictions_train, train_error, baseline_train, train_plot, predictions, test_error,
             baseline_test, test_plot, model]
 
 
-def run_and_plot(TEST_NAME, TEST_OBJECT, initial_value, final_value,
-                matrix, NORMALISATION, TRAIN_TEST_RATIO, SEQ_LEN, PREDICTION_LEN, PREDICTION_DELAY,
-                NO_FEATURES, UNITS, OUTPUT_DIM, LEARNING_RATE, BATCH_SIZE, EPOCHS, DROPOUT_RATIO,
-                              VALIDATION_SPLIT, ES_MIN_DELTA):
+# -------------------------------------------------- Write to disk --------------------------------------------------- #
+
+def run_and_plot_write_to_disk(TEST_NAME, TEST_OBJECT, initial_value, final_value,
+                               matrix, NORMALISATION, TRAIN_TEST_RATIO, SEQ_LEN, PREDICTION_LEN, PREDICTION_DELAY,
+                               NO_FEATURES, UNITS, OUTPUT_DIM, LEARNING_RATE, BATCH_SIZE, EPOCHS, DROPOUT_RATIO,
+                               VALIDATION_SPLIT, ES_MIN_DELTA):
 
     global baseline_train, baseline_test
 
@@ -404,4 +420,4 @@ def run_and_plot(TEST_NAME, TEST_OBJECT, initial_value, final_value,
     plt.savefig(newpath_loss + 'test')
     plt.close()
 
-    print("Result in " + TEST_NAME)
+    print("Result in folder:" + TEST_NAME)

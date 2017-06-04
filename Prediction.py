@@ -14,15 +14,14 @@
 # Hoeveelheid training data verhogen en plotten
 # Baseline
 
-# lstm.py
-import lstm
 import numpy as np
+
+# import methods from lstm.py
+from lstm import train_and_predict, run_and_plot_write_to_disk
 from Blockchain_test import return_data
 
 # Load data from Blockchain_test.py
 matrix = return_data()
-
-# matrix = np.array(matrix[0]) # Bitcoin price only
 
 # ----------------------------------------------------- Parameters --------------------------------------------------- #
 
@@ -51,19 +50,19 @@ ES_MIN_DELTA = 0
 
 # ----------------------------------------------------- Run model ---------------------------------------------------- #
 
-# TEST_NAME = "ADAM_OPTIMIZER_LR_NO_NORM"
-# TEST_OBJECT = "LEARNING_RATE"
+# TEST_NAME = "SEQ_LENGTH_1-20"
+# TEST_OBJECT = "SEQ_LEN"
 # initial_value = 1
 # final_value = 20
 #
-# lstm.run_and_plot(TEST_NAME, TEST_OBJECT, initial_value, final_value,
+# run_and_plot_write_to_disk(TEST_NAME, TEST_OBJECT, initial_value, final_value,
 #                 matrix, NORMALISATION, TRAIN_TEST_RATIO, SEQ_LEN, PREDICTION_LEN, PREDICTION_DELAY, NO_FEATURES, UNITS,
 #                 OUTPUT_DIM, LEARNING_RATE, BATCH_SIZE, EPOCHS, DROPOUT_RATIO, VALIDATION_SPLIT, ES_MIN_DELTA)
 
 
 loss_plot, val_error, predictions_train, train_error, baseline_train, train_plot, predictions, test_error, \
 baseline_test, test_plot, model =\
-    lstm.train_and_predict(matrix, NORMALISATION, TRAIN_TEST_RATIO, SEQ_LEN, PREDICTION_LEN, PREDICTION_DELAY, NO_FEATURES,
+    train_and_predict(matrix, NORMALISATION, TRAIN_TEST_RATIO, SEQ_LEN, PREDICTION_LEN, PREDICTION_DELAY, NO_FEATURES,
                       UNITS, OUTPUT_DIM, LEARNING_RATE, BATCH_SIZE, EPOCHS, DROPOUT_RATIO, VALIDATION_SPLIT, ES_MIN_DELTA)
 
 # Print maximum values of predictions of train and test set
