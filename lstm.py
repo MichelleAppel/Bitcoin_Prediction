@@ -73,8 +73,8 @@ def plot_train_test_set(train_X, train_y, test_X, test_y, time_step_of_seq):
     ax.plot(trainx, label="train_X")
     # ax.plot(train_y, label="train_y")
 
-    # plt.legend()
-    plt.savefig('plt/features-norm')
+    plt.legend()
+    plt.show()
 
     # Testset
     testx = test_X.reshape((test_X.shape[0], test_X.shape[2], test_X.shape[1]))[:, :, time_step_of_seq]
@@ -130,7 +130,7 @@ def plot_results_multiple(predicted_data, true_data, prediction_len, prediction_
 
     return plt
 
-
+# Plot the train and validation loss
 def plot_loss(model_fit):
     # summarize history for accuracy
     plt.plot(model_fit.history['loss'])
@@ -142,7 +142,6 @@ def plot_loss(model_fit):
     plt.legend(['train', 'validation'], loc='upper left')
     return [plt, model_fit.history['val_loss']]
 
-
 # Compute mean error
 def error(predicted, real, prediction_delay):
     errors = []
@@ -152,7 +151,6 @@ def error(predicted, real, prediction_delay):
         errors.append(np.abs(p - r))
     mean_error = np.array(errors).mean()
     return mean_error
-
 
 def baseline_mse(data, prediction_delay):
     total = 0
@@ -167,9 +165,11 @@ def baseline_mse(data, prediction_delay):
 
 # Method that runs a training and a prediction
 def train_and_predict(matrix, NORMALISATION, TRAIN_TEST_RATIO, SEQ_LEN, PREDICTION_LEN, PREDICTION_DELAY, NO_FEATURES,
-                      UNITS, OUTPUT_DIM, LEARNING_RATE, BATCH_SIZE, EPOCHS, DROPOUT_RATIO, VALIDATION_SPLIT):
+                      UNITS, OUTPUT_DIM, LEARNING_RATE, BATCH_SIZE, EPOCHS, DROPOUT_RATIO, VALIDATION_SPLIT, ES_MIN_DELTA):
 
     # ------------------------------------------------- Retrieve data ------------------------------------------------ #
+
+    matrix = np.array(matrix[:NO_FEATURES])
 
     # Get the training and test test
     train_X, train_y, test_X, test_y = load_data(
@@ -195,10 +195,12 @@ def train_and_predict(matrix, NORMALISATION, TRAIN_TEST_RATIO, SEQ_LEN, PREDICTI
         output_dim=OUTPUT_DIM,
     ))
 
-    rms = optimizers.RMSprop(lr=LEARNING_RATE)  # Optimizer
-    model.compile(loss='mse', optimizer=rms)  # Compile
+    rms = optimizers.RMSprop(lr=LEARNING_RATE)  # RMS Optimizer
+    adam = optimizers.adam(lr=LEARNING_RATE) # Adam Optimizer
+    model.compile(loss='mse', optimizer=adam)  # Compile
 
-    callback = [callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=50, mode='auto')]
+    # callback = [callbacks.ModelCheckpoint('models/model', monitor='val_loss', verbose=0, save_best_only=False,
+    #                                       save_weights_only=False, mode='auto', period=1)]
     # Plot predictions callback
     # Plot gradients
 
@@ -236,12 +238,12 @@ def train_and_predict(matrix, NORMALISATION, TRAIN_TEST_RATIO, SEQ_LEN, PREDICTI
             baseline_test, test_plot, model]
 
 
-
-
 def run_and_plot(TEST_NAME, TEST_OBJECT, initial_value, final_value,
                 matrix, NORMALISATION, TRAIN_TEST_RATIO, SEQ_LEN, PREDICTION_LEN, PREDICTION_DELAY,
                 NO_FEATURES, UNITS, OUTPUT_DIM, LEARNING_RATE, BATCH_SIZE, EPOCHS, DROPOUT_RATIO,
-                              VALIDATION_SPLIT):
+                              VALIDATION_SPLIT, ES_MIN_DELTA):
+
+    global baseline_train, baseline_test
 
     newpath_loss = 'plt/' + TEST_NAME + '/loss/'  # Create a new path
     if not os.path.exists(newpath_loss):  # If not already exist
@@ -270,11 +272,15 @@ def run_and_plot(TEST_NAME, TEST_OBJECT, initial_value, final_value,
             LEARNING_RATE = float(number)/1000
         elif TEST_OBJECT == "BATCH_SIZE":
             BATCH_SIZE = number
-            EPOCHS = 20 + (2*BATCH_SIZE) ** 2
         elif TEST_OBJECT == "DROPOUT_RATIO":
             DROPOUT_RATIO = float(number)/100
         elif TEST_OBJECT == "VALIDATION_SPLIT":
             VALIDATION_SPLIT = float(number)/100
+        elif TEST_OBJECT == "ES_MIN_DELTA":
+            ES_MIN_DELTA = 2 ** number
+        elif TEST_OBJECT == "NO_FEATURES":
+            NO_FEATURES = number
+            # EPOCHS = EPOCHS * number
 
         path_loss_plot = newpath_loss + TEST_NAME + str(number)
         path_train_plot = newpath_predictions + 'train_' + TEST_NAME + str(number)  # Create name for plot file
@@ -285,7 +291,7 @@ def run_and_plot(TEST_NAME, TEST_OBJECT, initial_value, final_value,
         test_plot, model = \
             train_and_predict(matrix, NORMALISATION, TRAIN_TEST_RATIO, SEQ_LEN, PREDICTION_LEN, PREDICTION_DELAY,
                               NO_FEATURES, UNITS, OUTPUT_DIM, LEARNING_RATE, BATCH_SIZE, EPOCHS, DROPOUT_RATIO,
-                              VALIDATION_SPLIT)
+                              VALIDATION_SPLIT, ES_MIN_DELTA)
 
         # Save plot
         # Keep this order, apparently it is important
@@ -302,7 +308,9 @@ def run_and_plot(TEST_NAME, TEST_OBJECT, initial_value, final_value,
          'BATCH_SIZE = ' + str(BATCH_SIZE) + '\n' +
          'EPOCHS = ' + str(EPOCHS) + '\n' +
          'DROPOUT_RATIO = ' + str(DROPOUT_RATIO) + '\n' +
-         'VALIDATION_SPLIT = ' + str(VALIDATION_SPLIT), fontsize = 6, horizontalalignment='left',
+         'VALIDATION_SPLIT = ' + str(VALIDATION_SPLIT) + '\n' +
+         'ES_MIN_DELTA = ' + str(ES_MIN_DELTA)
+                       , fontsize = 6, horizontalalignment='left',
          verticalalignment='bottom')
         test_plot.savefig(path_test_plot)
         test_plot.close()
@@ -320,13 +328,14 @@ def run_and_plot(TEST_NAME, TEST_OBJECT, initial_value, final_value,
          'BATCH_SIZE = ' + str(BATCH_SIZE) + '\n' +
          'EPOCHS = ' + str(EPOCHS) + '\n' +
          'DROPOUT_RATIO = ' + str(DROPOUT_RATIO) + '\n' +
-         'VALIDATION_SPLIT = ' + str(VALIDATION_SPLIT), fontsize = 6, horizontalalignment='left',
+         'VALIDATION_SPLIT = ' + str(VALIDATION_SPLIT) + '\n' +
+         'ES_MIN_DELTA = ' + str(ES_MIN_DELTA), fontsize = 6, horizontalalignment='left',
          verticalalignment='bottom')
         train_plot.savefig(path_train_plot)
         train_plot.close()
 
         test_plot.title("Train and validation loss from train set, " + TEST_OBJECT + ": " + str(number))
-        loss_plot.text(EPOCHS, int(val_error[0]), 'NORMALISATION = ' + str(NORMALISATION) + '\n' +
+        loss_plot.text(0.2, int(val_error[0]), 'NORMALISATION = ' + str(NORMALISATION) + '\n' +
          'TRAIN_TEST_RATIO = ' + str(TRAIN_TEST_RATIO) + '\n' +
          'SEQ_LEN = ' + str(SEQ_LEN) + '\n' +
          'PREDICTION_LEN = ' + str(PREDICTION_LEN) + '\n' +
@@ -338,7 +347,8 @@ def run_and_plot(TEST_NAME, TEST_OBJECT, initial_value, final_value,
          'BATCH_SIZE = ' + str(BATCH_SIZE) + '\n' +
          'EPOCHS = ' + str(EPOCHS) + '\n' +
          'DROPOUT_RATIO = ' + str(DROPOUT_RATIO) + '\n' +
-         'VALIDATION_SPLIT = ' + str(VALIDATION_SPLIT), fontsize = 6, horizontalalignment='right',
+         'VALIDATION_SPLIT = ' + str(VALIDATION_SPLIT) + '\n' +
+         'ES_MIN_DELTA = ' + str(ES_MIN_DELTA), fontsize = 6, horizontalalignment='left',
          verticalalignment='top')
         loss_plot.savefig(path_loss_plot)
         loss_plot.close()
@@ -348,6 +358,8 @@ def run_and_plot(TEST_NAME, TEST_OBJECT, initial_value, final_value,
         train_baselines.append(baseline_train)
         test_errors.append(test_error)
         test_baselines.append(baseline_test)
+
+        print("progress: " + str(number) + " of " + str(final_value))
 
     # Plot errors and save
     plt.plot(train_errors)
@@ -365,7 +377,8 @@ def run_and_plot(TEST_NAME, TEST_OBJECT, initial_value, final_value,
          'BATCH_SIZE = ' + str(BATCH_SIZE) + '\n' +
          'EPOCHS = ' + str(EPOCHS) + '\n' +
          'DROPOUT_RATIO = ' + str(DROPOUT_RATIO) + '\n' +
-         'VALIDATION_SPLIT = ' + str(VALIDATION_SPLIT), fontsize=6, horizontalalignment='left',
+         'VALIDATION_SPLIT = ' + str(VALIDATION_SPLIT) + '\n' +
+         'ES_MIN_DELTA = ' + str(ES_MIN_DELTA), fontsize=6, horizontalalignment='left',
          verticalalignment='bottom')
     plt.savefig(newpath_loss + 'train')
     plt.close()
@@ -385,9 +398,10 @@ def run_and_plot(TEST_NAME, TEST_OBJECT, initial_value, final_value,
          'BATCH_SIZE = ' + str(BATCH_SIZE) + '\n' +
          'EPOCHS = ' + str(EPOCHS) + '\n' +
          'DROPOUT_RATIO = ' + str(DROPOUT_RATIO) + '\n' +
-         'VALIDATION_SPLIT = ' + str(VALIDATION_SPLIT), fontsize = 6, horizontalalignment='left',
+         'VALIDATION_SPLIT = ' + str(VALIDATION_SPLIT) + '\n' +
+         'ES_MIN_DELTA = ' + str(ES_MIN_DELTA), fontsize = 6, horizontalalignment='left',
          verticalalignment='bottom')
     plt.savefig(newpath_loss + 'test')
     plt.close()
 
-    print("Result in" + TEST_NAME)
+    print("Result in " + TEST_NAME)
